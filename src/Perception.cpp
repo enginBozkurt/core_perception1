@@ -4,7 +4,7 @@ LiDAR_Percept::LiDAR_Percept(){
     //initial value
     m_max_x = 50.0; //ROI value
     m_max_y = 50.0;
-    m_max_z = -0.2;
+    m_max_z = -0.32;
 
     m_min_x = -50.0;
     m_min_y = -50.0;
