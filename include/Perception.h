@@ -1,78 +1,43 @@
-#ifndef INCLUDE_POINT_TYPES_H_
-#define INCLUDE_POINT_TYPES_H_
-
 #pragma once
 
 #include <iostream>
 #include <ros/ros.h>
 #include <vector>
-#include <time.h>
-
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl_ros/point_cloud.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <sensor_msgs/point_cloud_conversion.h>
 
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/filters/passthrough.h>
-
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree.h>
 #include <pcl/search/search.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/filters/extract_indices.h>
+#include <pcl_ros/point_cloud.h>
+
+#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/point_cloud_conversion.h>
+
 #include <visualization_msgs/MarkerArray.h>
 #include <geometry_msgs/PoseArray.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-
-#include <tf/transform_datatypes.h>
-
-#include <TrackAssociation.h>
-#include <ctrl_msgs/AvanteData.h>
 
 #include <velodyne_pointcloud/point_types.h>
 #include <velodyne_pointcloud/pointcloudXYZIR.h>
 
-struct PointXYZIT {
-  PCL_ADD_POINT4D
-  uint8_t intensity;
-  double timestamp;
-  uint16_t ring;
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-} EIGEN_ALIGN16;
-
-POINT_CLOUD_REGISTER_POINT_STRUCT(
-    PointXYZIT,
-    (float, x, x)(float, y, y)(float, z, z)(uint8_t, intensity, intensity)(
-        double, timestamp, timestamp)(uint16_t, ring, ring))
-
-typedef PointXYZIT PPoint;
-typedef pcl::PointCloud<PPoint> PPointCloud;
-
-#endif  // INCLUDE_POINT_TYPES_H_
-
-class LiDAR_Percept
+class Perception
 {
 private:
     ros::NodeHandle nh;
     ros::Subscriber sub_scan; //LiDAR Sub
-    ros::Subscriber ctrl_speed;
-    //bbox_check_publish
+
     ros::Publisher clustering_pub;
-    ros::Publisher boundingbox_pub;
-    ros::Publisher ID_pub;
-    ros::Publisher pose_pub;
+    ros::Publisher polygon_pub;
 
     //initial var
-    cv::Mat m_Image_map; // Boundary Filter
-    pcl::PointCloud<pcl::PointXYZI> m_lidar_Point;
-    pcl::PointCloud<pcl::PointXYZI> clustering_check; //clustering debug
+    pcl::PointCloud<pcl::PointXYZI> m_lidar_point;
 
     cv::Point3d m_max; //ROI Range
     cv::Point3d m_min;
@@ -86,29 +51,17 @@ private:
     int m_cluster_min;
     int m_cluster_max;
 
-    TrackAssociation_pt Track;
+    std::vector<std::vector<cv::Point>> m_hull; //Convex Hull
 
 public:
-    visualization_msgs::MarkerArray speed_result;
-    double m_speed;
+    Perception(ros::NodeHandle nh); //Constructor
 
-    //Basic Setting
-    LiDAR_Percept(); //Constructor
-    LiDAR_Percept(ros::NodeHandle nh); //Constructor
-
-    void speedCallback(const ctrl_msgs::AvanteData avante); //LiDAR(Velodyne...) Raw Data
-
+    void init();
     void HesaiCallback(const sensor_msgs::PointCloud2Ptr scan); //LiDAR(Hesai) Raw Data
-    pcl::PointCloud<pcl::PointXYZI> Hesai_Transform(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> arr); //Hesai PointCloud Transform
 
     // Function
     pcl::PointCloud<pcl::PointXYZI> f_lidar_Passthrough( pcl::PointCloud<pcl::PointXYZI> point); //pcl ROI
     pcl::PointCloud<pcl::PointXYZI> f_lidar_HeightMap(pcl::PointCloud<pcl::PointXYZI> point);
-    visualization_msgs::MarkerArray f_lidar_Euclidean_Clustering(pcl::PointCloud<pcl::PointXYZI> point);
-
-    //Function Merge code
-    visualization_msgs::MarkerArray detection_imgMap(pcl::PointCloud<pcl::PointXYZI> raw_point, double x, double y, double yaw);
-
-    //debug
-    pcl::PointCloud<pcl::PointXYZI> debug();
+    pcl::PointCloud<pcl::PointXYZI> f_lidar_Euclidean_Clustering(pcl::PointCloud<pcl::PointXYZI> point);
+    visualization_msgs::MarkerArray f_lidar_Drawing_polygon();
 };

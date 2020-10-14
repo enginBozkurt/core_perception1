@@ -37,7 +37,6 @@ ${PROJECT_NAME}
 ${project_HEADERS}
 src/main.cpp 
 src/Perception.cpp
-src/TrackAssociation.cpp
 )
 
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
