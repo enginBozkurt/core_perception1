@@ -22,6 +22,8 @@ LiDAR_Percept::LiDAR_Percept(){
     m_cluster_min = 4;
     m_cluster_max = 400;
 
+    std::cout << "hi" << std::endl;
+
     m_Image_map = cv::imread("/home/a/av_ws/src/ImageMap(edit_center_lane).png",cv::IMREAD_GRAYSCALE);
 }
 
