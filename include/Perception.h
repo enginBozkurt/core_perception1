@@ -1,6 +1,8 @@
 #ifndef INCLUDE_POINT_TYPES_H_
 #define INCLUDE_POINT_TYPES_H_
 
+#pragma once
+
 #include <iostream>
 #include <ros/ros.h>
 #include <vector>
@@ -21,6 +23,8 @@
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/filters/extract_indices.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <geometry_msgs/PoseArray.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/opencv.hpp>
@@ -28,6 +32,12 @@
 #include <opencv2/imgproc.hpp>
 
 #include <tf/transform_datatypes.h>
+
+#include <TrackAssociation.h>
+#include <ctrl_msgs/AvanteData.h>
+
+#include <velodyne_pointcloud/point_types.h>
+#include <velodyne_pointcloud/pointcloudXYZIR.h>
 
 struct PointXYZIT {
   PCL_ADD_POINT4D
@@ -52,38 +62,44 @@ class LiDAR_Percept
 private:
     ros::NodeHandle nh;
     ros::Subscriber sub_scan; //LiDAR Sub
+    ros::Subscriber ctrl_speed;
     //bbox_check_publish
     ros::Publisher clustering_pub;
     ros::Publisher boundingbox_pub;
+    ros::Publisher ID_pub;
+    ros::Publisher pose_pub;
 
     //initial var
     cv::Mat m_Image_map; // Boundary Filter
     pcl::PointCloud<pcl::PointXYZI> m_lidar_Point;
     pcl::PointCloud<pcl::PointXYZI> clustering_check; //clustering debug
 
-    double m_max_x; //ROI Range
-    double m_max_y;
-    double m_max_z;
-    double m_min_x;
-    double m_min_y;
-    double m_min_z;
+    cv::Point3d m_max; //ROI Range
+    cv::Point3d m_min;
 
     int m_grid_dim; //Make HeightMap Value
     double m_per_cell;
     double m_height_diff_threshold;
+    std::vector<std::vector<cv::Point2f>> raw_grid_data;
 
     double m_cluster_Range; //Clustering value
     int m_cluster_min;
     int m_cluster_max;
+
+    TrackAssociation_pt Track;
+
 public:
+    visualization_msgs::MarkerArray speed_result;
+    double m_speed;
+
     //Basic Setting
     LiDAR_Percept(); //Constructor
     LiDAR_Percept(ros::NodeHandle nh); //Constructor
 
-    void LiDARCallback(const sensor_msgs::PointCloud2Ptr scan); //LiDAR(Velodyne...) Raw Data
+    void speedCallback(const ctrl_msgs::AvanteData avante); //LiDAR(Velodyne...) Raw Data
 
     void HesaiCallback(const sensor_msgs::PointCloud2Ptr scan); //LiDAR(Hesai) Raw Data
-    pcl::PointCloud<pcl::PointXYZI> Hesai_Transform(PPointCloud arr); //Hesai PointCloud Transform
+    pcl::PointCloud<pcl::PointXYZI> Hesai_Transform(pcl::PointCloud<velodyne_pointcloud::PointXYZIR> arr); //Hesai PointCloud Transform
 
     // Function
     pcl::PointCloud<pcl::PointXYZI> f_lidar_Passthrough( pcl::PointCloud<pcl::PointXYZI> point); //pcl ROI

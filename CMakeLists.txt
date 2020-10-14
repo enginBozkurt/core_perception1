@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
-  serial
+  ctrl_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -37,7 +37,10 @@ ${PROJECT_NAME}
 ${project_HEADERS}
 src/main.cpp 
 src/Perception.cpp
+src/TrackAssociation.cpp
 )
+
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
